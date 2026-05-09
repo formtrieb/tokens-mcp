@@ -168,6 +168,7 @@ export function registerBrowseTools(server: McpServer) {
         type: t.$type,
         value: t.$value,
         sourceSet: t.sourceSet,
+        ...(t.$extensions && { $extensions: t.$extensions }),
       }));
 
       const truncated = tokens.length > showing;
@@ -225,11 +226,22 @@ function getAllTokensForFilter(
 interface TreeNode {
   [key: string]:
     | TreeNode
-    | { $type: string; $value: unknown; sourceSet: string };
+    | {
+        $type: string;
+        $value: unknown;
+        sourceSet: string;
+        $extensions?: unknown;
+      };
 }
 
 function buildTreeView(
-  tokens: { dotPath: string; $type: string; $value: unknown; sourceSet: string }[],
+  tokens: {
+    dotPath: string;
+    $type: string;
+    $value: unknown;
+    sourceSet: string;
+    $extensions?: unknown;
+  }[],
   prefix: string,
   maxDepth: number
 ): TreeNode {
@@ -253,6 +265,9 @@ function buildTreeView(
         $type: token.$type,
         $value: token.$value,
         sourceSet: token.sourceSet,
+        ...(token.$extensions !== undefined && {
+          $extensions: token.$extensions,
+        }),
       };
     } else {
       let current = tree;

@@ -5,6 +5,38 @@ All notable changes to `@formtrieb/tokens-mcp` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] — 2026-05-10
+
+### Added
+
+- **`$extensions` passthrough in `browse_tokens` and `search_tokens`.**
+  When a token defines `$extensions` (e.g. `studio.tokens.modify` for
+  colour modifications, or other vendor-specific blocks like
+  `com.figma.scopes`), both tools now include the block on the
+  corresponding result. Previously the outputs dropped `$extensions`
+  entirely, making it impossible for callers to distinguish a derived
+  token from a base token without a separate filesystem read.
+- **`modifier` on `resolve_token` chain steps.** A step whose token
+  defines `studio.tokens.modify` now carries the modifier in addition
+  to the existing `tokenPath` / `rawValue` / `sourceSet`. The
+  resolution behaviour is unchanged — the modifier is still applied
+  to the colour during resolution — but the chain output now records
+  *what* was applied *where*. Built on
+  `@formtrieb/tokens-core@^1.1.0` (`ResolutionStep.modifier` field).
+
+These changes are strictly additive — no field renames, no removals.
+Existing consumers that read only `path` / `type` / `value` /
+`sourceSet` (or only `tokenPath` / `rawValue` / `sourceSet`) are
+unaffected.
+
+### Known limitation
+
+- `resolve_batch` continues to return `steps: <number>` (count only).
+  Modifier visibility there is deferred; either expand the per-path
+  output shape in 2.2.0 or document the trade-off (use `resolve_token`
+  for chain detail, `resolve_batch` for bulk final values). No fix in
+  this release.
+
 ## [2.0.0] — 2026-05-09
 
 ### Initial public release — major rework of the MCP surface

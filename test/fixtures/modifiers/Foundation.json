@@ -1,0 +1,21 @@
+{
+  "color": {
+    "brand": {
+      "$value": "#5A2D91",
+      "$type": "color"
+    },
+    "brandHalf": {
+      "$value": "{color.brand}",
+      "$type": "color",
+      "$extensions": {
+        "studio.tokens": {
+          "modify": {
+            "type": "alpha",
+            "value": "0.5",
+            "space": "lch"
+          }
+        }
+      }
+    }
+  }
+}

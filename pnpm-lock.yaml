@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@formtrieb/tokens-core':
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: ^1.1.0
+        version: 1.1.0
       '@modelcontextprotocol/sdk':
         specifier: ^1.28.0
         version: 1.29.0(zod@4.4.3)
@@ -192,8 +192,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@formtrieb/tokens-core@1.0.0':
-    resolution: {integrity: sha512-Ud6ubx4eIFBxZVVa05krv8tM0a4nF6AHTkW/qUWmN1UzluIgZxM54CSauHghI3p3TZ4nZwlrG10xw7Ztb6wLEw==}
+  '@formtrieb/tokens-core@1.1.0':
+    resolution: {integrity: sha512-+53P89K49UqXaeSJiadAD+mCW77J3rmND/nlQST0pkLRVBHFBPTC5IUo+cDJeE0wP885TCg3670V6rpGLWTiDg==}
 
   '@hono/node-server@1.19.14':
     resolution: {integrity: sha512-GwtvgtXxnWsucXvbQXkRgqksiH2Qed37H9xHZocE5sA3N8O8O8/8FA3uclQXxXVzc9XBZuEOMK7+r02FmSpHtw==}
@@ -1192,7 +1192,7 @@ snapshots:
   '@esbuild/win32-x64@0.27.7':
     optional: true
 
-  '@formtrieb/tokens-core@1.0.0':
+  '@formtrieb/tokens-core@1.1.0':
     dependencies:
       culori: 4.0.2
 

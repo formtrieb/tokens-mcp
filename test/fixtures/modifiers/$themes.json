@@ -1,0 +1,10 @@
+[
+  {
+    "id": "theme-default",
+    "name": "Default",
+    "group": "Theme",
+    "selectedTokenSets": {
+      "Foundation": "enabled"
+    }
+  }
+]
