@@ -1,0 +1,11 @@
+[
+  {
+    "id": "missing-set-theme",
+    "name": "Default",
+    "group": "Theme",
+    "selectedTokenSets": {
+      "Real": "enabled",
+      "Ghost": "enabled"
+    }
+  }
+]

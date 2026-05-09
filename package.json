@@ -1,0 +1,53 @@
+{
+  "name": "@formtrieb/tokens-mcp",
+  "version": "2.0.0",
+  "description": "MCP server exposing Tokens-Studio-shaped design token systems to LLM clients — browse, resolve, theme compose/compare, validation. Per-call tokens_path with walk-up auto-detection and mtime-aware LRU cache for live brand iteration.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "tokens-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/formtrieb/tokens-mcp.git"
+  },
+  "homepage": "https://github.com/formtrieb/tokens-mcp",
+  "bugs": {
+    "url": "https://github.com/formtrieb/tokens-mcp/issues"
+  },
+  "keywords": [
+    "design-tokens",
+    "tokens-studio",
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "design-system",
+    "dtcg"
+  ],
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "build": "rm -rf dist && tsup && chmod +x dist/index.js",
+    "build:typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "prepublishOnly": "pnpm run build && vitest --run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.28.0",
+    "@formtrieb/tokens-core": "^1.0.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.5.1",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^3.0.0"
+  }
+}

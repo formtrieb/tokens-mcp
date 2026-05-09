@@ -1,0 +1,16 @@
+{
+  "color": {
+    "gray": {
+      "100": { "$value": "#f5f5f5", "$type": "color" },
+      "500": { "$value": "#737373", "$type": "color" },
+      "900": { "$value": "#171717", "$type": "color" }
+    },
+    "blue": {
+      "500": { "$value": "#3b82f6", "$type": "color" }
+    }
+  },
+  "spacing": {
+    "sm": { "$value": "8px", "$type": "spacing" },
+    "md": { "$value": "16px", "$type": "spacing" }
+  }
+}

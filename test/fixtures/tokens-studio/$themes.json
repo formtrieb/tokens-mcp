@@ -1,0 +1,20 @@
+[
+  {
+    "id": "theme-light-001",
+    "name": "Light",
+    "group": "Theme",
+    "selectedTokenSets": {
+      "Foundation": "source",
+      "Light": "enabled"
+    }
+  },
+  {
+    "id": "theme-dark-001",
+    "name": "Dark",
+    "group": "Theme",
+    "selectedTokenSets": {
+      "Foundation": "source",
+      "Dark": "enabled"
+    }
+  }
+]
