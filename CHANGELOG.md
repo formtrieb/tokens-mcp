@@ -5,6 +5,21 @@ All notable changes to `@formtrieb/tokens-mcp` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] — 2026-05-14
+
+### Added
+
+- **Nested `tokens/tokens/` detection in walk-up auto-resolution.** When a
+  token repo is vendored into a project via `git subtree` (or a similar
+  mechanism), its `$metadata.json` commonly lands one level deeper than a
+  hand-placed token set — at `<dir>/tokens/tokens/$metadata.json`. The
+  walk-up resolver now probes that nested location at every ancestor level
+  in addition to the direct `<dir>/tokens/$metadata.json`. A direct
+  `tokens/` still wins over a nested `tokens/tokens/` at the same level,
+  and a closer ancestor still wins over a farther one. Strictly additive —
+  layouts that already resolved are unaffected; the explicit `tokens_path`
+  argument and the `TOKENS_PATH` env fallback are unchanged.
+
 ## [2.1.0] — 2026-05-10
 
 ### Added

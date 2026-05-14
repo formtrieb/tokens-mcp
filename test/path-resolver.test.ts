@@ -82,6 +82,45 @@ describe("resolveTokensPath", () => {
     expect(result.path).toBe(inner);
   });
 
+  it("walk-up finds the nested tokens/tokens/ of a git-subtree layout", () => {
+    // root/
+    //   project/
+    //     tokens/
+    //       tokens/            ← vendored via git subtree
+    //         $metadata.json
+    //     src/                 ← cwd starts here
+    const nested = join(root, "project", "tokens", "tokens");
+    mkdirSync(nested, { recursive: true });
+    writeFileSync(join(nested, "$metadata.json"), '{"tokenSetOrder":[]}');
+    const cwd = join(root, "project", "src");
+    mkdirSync(cwd, { recursive: true });
+
+    const result = resolveTokensPath({}, { cwd, env: {} });
+
+    expect(result.path).toBe(nested);
+    expect(result.source).toBe("walkup");
+  });
+
+  it("prefers a direct tokens/ over a nested tokens/tokens/ at the same level", () => {
+    // root/
+    //   tokens/
+    //     $metadata.json       ← direct, should win
+    //     tokens/
+    //       $metadata.json     ← nested, ignored
+    //   src/                   ← cwd
+    const direct = join(root, "tokens");
+    const nested = join(direct, "tokens");
+    mkdirSync(nested, { recursive: true });
+    writeFileSync(join(direct, "$metadata.json"), '{"tokenSetOrder":[]}');
+    writeFileSync(join(nested, "$metadata.json"), '{"tokenSetOrder":[]}');
+    const cwd = join(root, "src");
+    mkdirSync(cwd, { recursive: true });
+
+    const result = resolveTokensPath({}, { cwd, env: {} });
+
+    expect(result.path).toBe(direct);
+  });
+
   it("throws a helpful error when no arg, walk-up empty, and no env var", () => {
     const cwd = join(root, "isolated");
     mkdirSync(cwd, { recursive: true });

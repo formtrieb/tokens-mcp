@@ -18,6 +18,12 @@ function walkUpForTokens(startDir: string): string | null {
     if (existsSync(join(tokensDir, "$metadata.json"))) {
       return tokensDir;
     }
+    // git-subtree layout: a vendored token repo nests one level deeper
+    // (<current>/tokens/tokens/$metadata.json).
+    const nestedTokensDir = join(tokensDir, "tokens");
+    if (existsSync(join(nestedTokensDir, "$metadata.json"))) {
+      return nestedTokensDir;
+    }
     const parent = dirname(current);
     if (parent === current) return null;
     current = parent;
