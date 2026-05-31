@@ -134,6 +134,37 @@ describe("tools-integration: routing via tokens_path against tokens-studio fixtu
     expect(results["color.foreground"]!.finalValue).toBe("#171717");
   });
 
+  it("resolve_batch omits the full chain by default (count only)", async () => {
+    const m = setup();
+    const out = await m.callTool("resolve_batch", {
+      tokens_path: FIXTURE,
+      paths: ["color.background"],
+    });
+    const results = out.results as Record<
+      string,
+      { steps: unknown; chain?: unknown }
+    >;
+    expect(typeof results["color.background"]!.steps).toBe("number");
+    expect(results["color.background"]!.chain).toBeUndefined();
+  });
+
+  it("resolve_batch returns the full reference chain when verbose", async () => {
+    const m = setup();
+    const out = await m.callTool("resolve_batch", {
+      tokens_path: FIXTURE,
+      paths: ["color.background"],
+      verbose: true,
+    });
+    const results = out.results as Record<
+      string,
+      { chain?: Array<{ tokenPath: string }> }
+    >;
+    const chain = results["color.background"]!.chain;
+    expect(Array.isArray(chain)).toBe(true);
+    expect(chain!.length).toBeGreaterThan(0);
+    expect(chain![0]).toHaveProperty("tokenPath");
+  });
+
   it("compose_theme returns valid enabled/source structure with default axes", async () => {
     const m = setup();
     const out = await m.callTool("compose_theme", {

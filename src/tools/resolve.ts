@@ -90,7 +90,7 @@ export function registerResolveTools(server: McpServer) {
     "resolve_batch",
     {
       description:
-        "Resolve multiple token dot-paths in one call against the same theme. Useful for resolving all states of a control variant. For a single path with full chain tracing, use resolve_token.",
+        "Resolve multiple token dot-paths in one call against the same theme. Useful for resolving all states of a control variant. Pass verbose:true to include each path's full reference chain (steps + applied colour modifiers) — useful for spotting alpha/lighten/darken modifiers that shape the final value. For a single path with full chain tracing, use resolve_token.",
       inputSchema: {
         paths: z
           .array(z.string().min(1))
@@ -100,11 +100,17 @@ export function registerResolveTools(server: McpServer) {
           .object(themeAxesShape)
           .optional()
           .describe("Theme axes. Any omitted axis uses its default."),
+        verbose: z
+          .boolean()
+          .optional()
+          .describe(
+            "When true, include each path's full reference chain (steps + modifiers) instead of just a step count."
+          ),
         tokens_path: z.string().optional().describe(TOKENS_PATH_DESCRIPTION),
       },
       annotations: { readOnlyHint: true, idempotentHint: true },
     },
-    async ({ paths, theme, tokens_path }) => {
+    async ({ paths, theme, verbose, tokens_path }) => {
       const { tokenTree, themeLoader } = resolveAndLoad({ tokens_path });
       const axes = coerceTheme(theme, themeLoader);
       const { enabled, source } = themeLoader.getActiveSets(axes);
@@ -113,7 +119,12 @@ export function registerResolveTools(server: McpServer) {
 
       const results: Record<
         string,
-        { finalValue: unknown; steps: number; errors?: string[] }
+        {
+          finalValue: unknown;
+          steps: number;
+          chain?: ReturnType<typeof resolver.resolve>["steps"];
+          errors?: string[];
+        }
       > = {};
 
       for (const path of paths) {
@@ -121,6 +132,7 @@ export function registerResolveTools(server: McpServer) {
         results[path] = {
           finalValue: chain.finalValue,
           steps: chain.steps.length,
+          ...(verbose && { chain: chain.steps }),
           errors: chain.errors.length > 0 ? chain.errors : undefined,
         };
       }

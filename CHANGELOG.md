@@ -5,6 +5,24 @@ All notable changes to `@formtrieb/tokens-mcp` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] — 2026-05-31
+
+### Added
+
+- **`verbose` flag on `resolve_batch`.** When `true`, each path's result
+  includes its full reference `chain` (steps + applied colour modifiers)
+  instead of just a `steps` count. Default unchanged (count only) —
+  backward-compatible. Lets a batch scan see which paths carry
+  alpha/lighten/darken modifiers shaping the final value, without falling back
+  to per-path `resolve_token` calls.
+
+### Fixed
+
+- **Alpha/modifier colours no longer resolve to their unmodified base.** Via
+  the `@formtrieb/tokens-core` fix, modifiers whose value is a token reference
+  (e.g. an alpha multiplier) are now composed into `finalValue` instead of
+  being silently dropped. Previously these read as "stale" opaque colours.
+
 ## [2.2.0] — 2026-05-14
 
 ### Added
