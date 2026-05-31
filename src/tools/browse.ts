@@ -1,7 +1,12 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { TokenLoader } from "../loader/token-loader.js";
-import type { TokenTree } from "@formtrieb/tokens-core";
+import {
+  ReferenceResolver,
+  findColorMatches,
+  type TokenTree,
+  type ColorCandidate,
+} from "@formtrieb/tokens-core";
 import { resolveAndLoad, TOKENS_PATH_DESCRIPTION } from "../token-context.js";
 
 /**
@@ -190,6 +195,59 @@ export function registerBrowseTools(server: McpServer) {
               null,
               2
             ),
+          },
+        ],
+      };
+    }
+  );
+
+  server.registerTool(
+    "find_token_by_value",
+    {
+      description:
+        "Reverse-lookup: given a colour value (hex, rgb(), rgba()), find the token dot-paths that resolve to it for a theme. Exact matching is format/casing-insensitive. Pass nearest:true to also get the perceptually closest non-exact token (CIEDE2000 ΔE) — useful when a raw Figma hex like `#2072b6` drifted slightly from any bound token. Complements search_tokens, which matches names not values.",
+      inputSchema: {
+        value: z
+          .string()
+          .min(1)
+          .describe(
+            "Colour value to look up (e.g. '#2072b6', 'rgb(32, 114, 182)')"
+          ),
+        theme: z
+          .object({})
+          .catchall(z.string())
+          .optional()
+          .describe("Theme axes to resolve against (optional; uses defaults)."),
+        nearest: z
+          .boolean()
+          .optional()
+          .describe(
+            "When true, also return the closest non-exact token by CIEDE2000 ΔE."
+          ),
+        tokens_path: z.string().optional().describe(TOKENS_PATH_DESCRIPTION),
+      },
+      annotations: { readOnlyHint: true, idempotentHint: true },
+    },
+    async ({ value, theme, nearest, tokens_path }) => {
+      const { tokenTree, themeLoader } = resolveAndLoad({ tokens_path });
+      const axes = { ...themeLoader.getDefaultAxes(), ...(theme ?? {}) };
+      const { enabled, source } = themeLoader.getActiveSets(axes);
+      const merged = tokenTree.buildMergedTree(enabled, source);
+      const resolver = new ReferenceResolver(merged);
+
+      const candidates: ColorCandidate[] = [];
+      for (const path of merged.keys()) {
+        const final = resolver.resolve(path).finalValue;
+        if (typeof final === "string") candidates.push({ path, value: final });
+      }
+
+      const result = findColorMatches(value, candidates, { nearest: !!nearest });
+
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: JSON.stringify({ theme: axes, ...result }, null, 2),
           },
         ],
       };

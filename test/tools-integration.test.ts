@@ -63,6 +63,7 @@ describe("tools-integration: tokens_path parameter present in every tool", () =>
     "resolve_token",
     "resolve_batch",
     "search_tokens",
+    "find_token_by_value",
     "compose_theme",
     "compare_themes",
     "find_placeholders",
@@ -123,6 +124,37 @@ describe("tools-integration: routing via tokens_path against tokens-studio fixtu
     expect(out.finalValue).toBe("#f5f5f5");
   });
 
+  it("resolve_token renders finalValue in the requested format (rgba)", async () => {
+    const m = setup();
+    const out = await m.callTool("resolve_token", {
+      tokens_path: FIXTURE,
+      path: "color.background",
+      format: "rgba",
+    });
+    expect(out.finalValue).toBe("rgb(245, 245, 245)");
+  });
+
+  it("resolve_token renders finalValue in the requested format (hex8)", async () => {
+    const m = setup();
+    const out = await m.callTool("resolve_token", {
+      tokens_path: FIXTURE,
+      path: "color.background",
+      format: "hex8",
+    });
+    expect(out.finalValue).toBe("#f5f5f5ff");
+  });
+
+  it("resolve_batch renders finalValue in the requested format", async () => {
+    const m = setup();
+    const out = await m.callTool("resolve_batch", {
+      tokens_path: FIXTURE,
+      paths: ["color.background"],
+      format: "rgba",
+    });
+    const results = out.results as Record<string, { finalValue: unknown }>;
+    expect(results["color.background"]!.finalValue).toBe("rgb(245, 245, 245)");
+  });
+
   it("resolve_batch resolves multiple paths in one call", async () => {
     const m = setup();
     const out = await m.callTool("resolve_batch", {
@@ -163,6 +195,32 @@ describe("tools-integration: routing via tokens_path against tokens-studio fixtu
     expect(Array.isArray(chain)).toBe(true);
     expect(chain!.length).toBeGreaterThan(0);
     expect(chain![0]).toHaveProperty("tokenPath");
+  });
+
+  it("find_token_by_value finds the token whose resolved colour matches a raw hex", async () => {
+    const m = setup();
+    const out = await m.callTool("find_token_by_value", {
+      tokens_path: FIXTURE,
+      value: "#f5f5f5",
+    });
+    expect(out.exact).toContain("color.background");
+    expect(out.queryHex).toBe("#f5f5f5ff");
+  });
+
+  it("find_token_by_value returns a nearest match for a near-miss hex when requested", async () => {
+    const m = setup();
+    const out = await m.callTool("find_token_by_value", {
+      tokens_path: FIXTURE,
+      value: "#3b82f7", // one step off color.blue.500 (#3b82f6), the fixture's unique blue
+      nearest: true,
+    });
+    expect(out.exact).toEqual([]);
+    const nearest = out.nearest as {
+      value: string;
+      deltaE: number;
+    } | null;
+    expect(nearest?.value).toBe("#3b82f6");
+    expect(nearest?.deltaE).toBeLessThan(1);
   });
 
   it("compose_theme returns valid enabled/source structure with default axes", async () => {

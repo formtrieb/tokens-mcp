@@ -1,7 +1,10 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { ReferenceResolver } from "@formtrieb/tokens-core";
+import { ReferenceResolver, formatColor } from "@formtrieb/tokens-core";
 import type { ThemeAxes } from "@formtrieb/tokens-core";
+
+const FORMAT_DESCRIPTION =
+  "Optional colour render format for finalValue: 'rgba' (rgb()/rgba()), 'hex8' (#rrggbbaa), or 'hex' (#rrggbb). Non-colour values pass through unchanged. Omit to keep the raw resolved value (alpha modifiers stay rgba(), everything else hex).";
 import type { ThemeLoader } from "../loader/theme-loader.js";
 import { resolveAndLoad, TOKENS_PATH_DESCRIPTION } from "../token-context.js";
 
@@ -53,17 +56,24 @@ export function registerResolveTools(server: McpServer) {
           .describe(
             "Theme axes to resolve against. Any omitted axis uses its default."
           ),
+        format: z
+          .enum(["rgba", "hex8", "hex"])
+          .optional()
+          .describe(FORMAT_DESCRIPTION),
         tokens_path: z.string().optional().describe(TOKENS_PATH_DESCRIPTION),
       },
       annotations: { readOnlyHint: true, idempotentHint: true },
     },
-    async ({ path, theme, tokens_path }) => {
+    async ({ path, theme, format, tokens_path }) => {
       const { tokenTree, themeLoader } = resolveAndLoad({ tokens_path });
       const axes = coerceTheme(theme, themeLoader);
       const { enabled, source } = themeLoader.getActiveSets(axes);
       const merged = tokenTree.buildMergedTree(enabled, source);
       const resolver = new ReferenceResolver(merged);
       const chain = resolver.resolve(path);
+      const finalValue = format
+        ? formatColor(chain.finalValue, format)
+        : chain.finalValue;
 
       return {
         content: [
@@ -74,7 +84,7 @@ export function registerResolveTools(server: McpServer) {
                 token: path,
                 theme: axes,
                 chain: chain.steps,
-                finalValue: chain.finalValue,
+                finalValue,
                 errors: chain.errors.length > 0 ? chain.errors : undefined,
               },
               null,
@@ -106,11 +116,15 @@ export function registerResolveTools(server: McpServer) {
           .describe(
             "When true, include each path's full reference chain (steps + modifiers) instead of just a step count."
           ),
+        format: z
+          .enum(["rgba", "hex8", "hex"])
+          .optional()
+          .describe(FORMAT_DESCRIPTION),
         tokens_path: z.string().optional().describe(TOKENS_PATH_DESCRIPTION),
       },
       annotations: { readOnlyHint: true, idempotentHint: true },
     },
-    async ({ paths, theme, verbose, tokens_path }) => {
+    async ({ paths, theme, verbose, format, tokens_path }) => {
       const { tokenTree, themeLoader } = resolveAndLoad({ tokens_path });
       const axes = coerceTheme(theme, themeLoader);
       const { enabled, source } = themeLoader.getActiveSets(axes);
@@ -130,7 +144,9 @@ export function registerResolveTools(server: McpServer) {
       for (const path of paths) {
         const chain = resolver.resolve(path);
         results[path] = {
-          finalValue: chain.finalValue,
+          finalValue: format
+            ? formatColor(chain.finalValue, format)
+            : chain.finalValue,
           steps: chain.steps.length,
           ...(verbose && { chain: chain.steps }),
           errors: chain.errors.length > 0 ? chain.errors : undefined,
