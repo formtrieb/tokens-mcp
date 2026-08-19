@@ -1,6 +1,6 @@
 {
   "name": "@formtrieb/tokens-mcp",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "MCP server exposing Tokens-Studio-shaped design token systems to LLM clients — browse, resolve, theme compose/compare, validation. Per-call tokens_path with walk-up auto-detection and mtime-aware LRU cache for live brand iteration.",
   "license": "Apache-2.0",
   "type": "module",
