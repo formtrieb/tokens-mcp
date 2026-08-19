@@ -8,6 +8,11 @@ import {
   type ColorCandidate,
 } from "@formtrieb/tokens-core";
 import { resolveAndLoad, TOKENS_PATH_DESCRIPTION } from "../token-context.js";
+import {
+  themeAxesArg,
+  THEME_AXES_DESCRIPTION,
+  resolveAxes,
+} from "./theme-arg.js";
 
 /**
  * DTCG-style token types in use in the Formtrieb token system.
@@ -213,11 +218,7 @@ export function registerBrowseTools(server: McpServer) {
           .describe(
             "Colour value to look up (e.g. '#2072b6', 'rgb(32, 114, 182)')"
           ),
-        theme: z
-          .object({})
-          .catchall(z.string())
-          .optional()
-          .describe("Theme axes to resolve against (optional; uses defaults)."),
+        theme: themeAxesArg.optional().describe(THEME_AXES_DESCRIPTION),
         nearest: z
           .boolean()
           .optional()
@@ -230,7 +231,7 @@ export function registerBrowseTools(server: McpServer) {
     },
     async ({ value, theme, nearest, tokens_path }) => {
       const { tokenTree, themeLoader } = resolveAndLoad({ tokens_path });
-      const axes = { ...themeLoader.getDefaultAxes(), ...(theme ?? {}) };
+      const axes = resolveAxes(theme, themeLoader);
       const { enabled, source } = themeLoader.getActiveSets(axes);
       const merged = tokenTree.buildMergedTree(enabled, source);
       const resolver = new ReferenceResolver(merged);

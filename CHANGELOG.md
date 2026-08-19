@@ -5,6 +5,48 @@ All notable changes to `@formtrieb/tokens-mcp` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] — 2026-08-19
+
+### Fixed
+
+- **Theme axes are no longer hard-coded to one design system.** The `theme` /
+  `axes` / `theme_a` / `theme_b` parameters declared fixed Zod enums
+  (`Semantic: Light|Dark`, `Device: Desktop|Tablet|Mobile`, `Shape: Round|Sharp`).
+  The server itself is per-call generic — `tokens_path` points it at any
+  Tokens-Studio workspace — but a token system with its own axes (`Brand`,
+  `Density`, or simply differently-named themes) could not address them: the enums
+  **silently dropped** the unknown key, and the call resolved against the default
+  theme instead of the requested one, with no error. Axis names and values now come
+  from the loaded `$themes.json`, so any design system's axes work.
+- **Themes without a `group` in `$themes.json` no longer surface as the axis
+  `"undefined"`.** They collect under `Ungrouped` and are addressable through it
+  (via `@formtrieb/tokens-core` 1.2.0).
+
+### Added
+
+- **Runtime axis validation on every theme-taking tool** (`resolve_token`,
+  `resolve_batch`, `compose_theme`, `compare_themes`, `find_token_by_value`). An
+  MCP tool schema is static per server and cannot vary per `tokens_path`, so the
+  check belongs in the handler. An unknown axis or value now fails with the axes
+  the loaded system actually defines, their values, which value is the default, and
+  a "did you mean" when only the casing differs — instead of resolving something
+  the caller did not ask for.
+- **`defaults` in the `list_themes` payload** — names the value each axis falls
+  back to when a call omits it.
+
+### Changed
+
+- Tool descriptions no longer present `Semantic` / `Device` / `Shape` as the axes.
+  They are given as an example, with a pointer to `list_themes` for discovering the
+  axes of the system at hand.
+
+### Compatibility
+
+Additive for existing callers: `Semantic` / `Device` / `Shape` keep working
+unchanged wherever `$themes.json` defines them — they are now read from the data
+instead of the schema. The one behaviour change is that an axis or value the loaded
+system does not define is now an error rather than a silently ignored argument.
+
 ## [2.4.0] — 2026-05-31
 
 ### Added

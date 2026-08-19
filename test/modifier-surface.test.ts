@@ -1,61 +1,19 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { registerBrowseTools } from "../src/tools/browse.js";
-import { registerResolveTools } from "../src/tools/resolve.js";
-import { registerThemeTools } from "../src/tools/themes.js";
-import { registerValidateTools } from "../src/tools/validate.js";
 import { _clearCacheForTesting } from "../src/token-context.js";
+import { setupTools } from "./mock-server.js";
 
 const FIXTURE = join(
   dirname(fileURLToPath(import.meta.url)),
   "fixtures/modifiers"
 );
 
-interface RegisteredTool {
-  config: { inputSchema?: Record<string, unknown> };
-  handler: (args: Record<string, unknown>) => Promise<{
-    content: { type: string; text: string }[];
-  }>;
-}
-
-function createMockServer() {
-  const tools = new Map<string, RegisteredTool>();
-  const server = {
-    registerTool: (
-      name: string,
-      config: RegisteredTool["config"],
-      handler: RegisteredTool["handler"]
-    ) => {
-      tools.set(name, { config, handler });
-    },
-  };
-  return {
-    server: server as unknown as McpServer,
-    callTool: async (name: string, args: Record<string, unknown>) => {
-      const tool = tools.get(name);
-      if (!tool) throw new Error(`Tool not registered: ${name}`);
-      const result = await tool.handler(args);
-      return JSON.parse(result.content[0]!.text) as Record<string, unknown>;
-    },
-  };
-}
-
-function setup() {
-  const m = createMockServer();
-  registerBrowseTools(m.server);
-  registerResolveTools(m.server);
-  registerThemeTools(m.server);
-  registerValidateTools(m.server);
-  return m;
-}
-
 beforeEach(() => _clearCacheForTesting());
 
 describe("modifier-surface: $extensions visible in tool outputs", () => {
   it("search_tokens returns $extensions on a token that has studio.tokens.modify", async () => {
-    const m = setup();
+    const m = setupTools();
     const out = await m.callTool("search_tokens", {
       tokens_path: FIXTURE,
       query: "brandHalf",
@@ -74,7 +32,7 @@ describe("modifier-surface: $extensions visible in tool outputs", () => {
   });
 
   it("browse_tokens tree leaf includes $extensions when present", async () => {
-    const m = setup();
+    const m = setupTools();
     const out = await m.callTool("browse_tokens", {
       tokens_path: FIXTURE,
       set: "Foundation",
@@ -94,7 +52,7 @@ describe("modifier-surface: $extensions visible in tool outputs", () => {
   });
 
   it("resolve_token chain step records the applied modifier", async () => {
-    const m = setup();
+    const m = setupTools();
     const out = await m.callTool("resolve_token", {
       tokens_path: FIXTURE,
       path: "color.brandHalf",

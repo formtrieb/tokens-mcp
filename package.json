@@ -1,6 +1,6 @@
 {
   "name": "@formtrieb/tokens-mcp",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "MCP server exposing Tokens-Studio-shaped design token systems to LLM clients — browse, resolve, theme compose/compare, validation. Per-call tokens_path with walk-up auto-detection and mtime-aware LRU cache for live brand iteration.",
   "license": "Apache-2.0",
   "type": "module",
@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.28.0",
-    "@formtrieb/tokens-core": "^1.1.2",
+    "@formtrieb/tokens-core": "^1.2.0",
     "zod": "^4.0.0"
   },
   "devDependencies": {

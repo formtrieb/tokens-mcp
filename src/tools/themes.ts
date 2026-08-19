@@ -3,32 +3,18 @@ import { z } from "zod";
 import { ReferenceResolver } from "@formtrieb/tokens-core";
 import type { ThemeAxes } from "@formtrieb/tokens-core";
 import { resolveAndLoad, TOKENS_PATH_DESCRIPTION } from "../token-context.js";
-
-/**
- * Zod shape for Formtrieb's user-selectable theme axes.
- * Matches the three axes with user choices in $themes.json.
- */
-const themeAxesShape = {
-  Semantic: z
-    .enum(["Light", "Dark"])
-    .optional()
-    .describe("Light/dark mode"),
-  Device: z
-    .enum(["Desktop", "Tablet", "Mobile"])
-    .optional()
-    .describe("Device breakpoint"),
-  Shape: z
-    .enum(["Round", "Sharp"])
-    .optional()
-    .describe("Corner shape style"),
-};
+import {
+  themeAxesArg,
+  THEME_AXES_DESCRIPTION,
+  assertAxes,
+} from "./theme-arg.js";
 
 export function registerThemeTools(server: McpServer) {
   server.registerTool(
     "list_themes",
     {
       description:
-        "List all available themes grouped by axis (Semantic, Device, Shape, Foundation, Typography, Components-*). Use this to discover which values are valid for theme arguments in other tools.",
+        "List all available themes grouped by axis, as defined by the loaded $themes.json. Axis names are design-system specific (Semantic/Device/Shape in one system, Brand/Density in another). Call this first to discover which axes and values are valid for the theme arguments of other tools; `defaults` names the value each axis falls back to. Themes without a group in $themes.json collect under the `Ungrouped` axis.",
       inputSchema: {
         tokens_path: z.string().optional().describe(TOKENS_PATH_DESCRIPTION),
       },
@@ -59,11 +45,13 @@ export function registerThemeTools(server: McpServer) {
         }));
       }
 
+      const defaults = themeLoader.getDefaultAxes();
+
       return {
         content: [
           {
             type: "text" as const,
-            text: JSON.stringify({ axes }, null, 2),
+            text: JSON.stringify({ axes, defaults }, null, 2),
           },
         ],
       };
@@ -76,17 +64,14 @@ export function registerThemeTools(server: McpServer) {
       description:
         "Show which token sets are active for a given theme combination. Returns enabled sets, source sets, and any unspecified axes falling back to defaults.",
       inputSchema: {
-        axes: z
-          .object(themeAxesShape)
-          .describe(
-            "Theme axis selections (e.g. { Semantic: 'Light', Device: 'Desktop' })"
-          ),
+        axes: themeAxesArg.describe(THEME_AXES_DESCRIPTION),
         tokens_path: z.string().optional().describe(TOKENS_PATH_DESCRIPTION),
       },
       annotations: { readOnlyHint: true, idempotentHint: true },
     },
     async ({ axes, tokens_path }) => {
       const { themeLoader } = resolveAndLoad({ tokens_path });
+      assertAxes(axes, themeLoader);
       const typedAxes = axes as ThemeAxes;
       const { enabled, source } = themeLoader.getActiveSets(typedAxes);
       const allGroups = themeLoader.getAxisGroups();
@@ -121,12 +106,8 @@ export function registerThemeTools(server: McpServer) {
       description:
         "Compare resolved token values between two theme configurations. Returns which paths differ and their values. Hard cap: 200 changed paths, 50 per only-in-A/B list.",
       inputSchema: {
-        theme_a: z
-          .object(themeAxesShape)
-          .describe("First theme axes (e.g. { Semantic: 'Light' })"),
-        theme_b: z
-          .object(themeAxesShape)
-          .describe("Second theme axes (e.g. { Semantic: 'Dark' })"),
+        theme_a: themeAxesArg.describe(`First theme. ${THEME_AXES_DESCRIPTION}`),
+        theme_b: themeAxesArg.describe(`Second theme. ${THEME_AXES_DESCRIPTION}`),
         path_prefix: z
           .string()
           .optional()
@@ -141,6 +122,8 @@ export function registerThemeTools(server: McpServer) {
     },
     async ({ theme_a, theme_b, path_prefix, type, tokens_path }) => {
       const { tokenTree, themeLoader } = resolveAndLoad({ tokens_path });
+      assertAxes(theme_a, themeLoader);
+      assertAxes(theme_b, themeLoader);
       const axesA = theme_a as ThemeAxes;
       const axesB = theme_b as ThemeAxes;
       const { enabled: enabledA, source: sourceA } = themeLoader.getActiveSets(axesA);

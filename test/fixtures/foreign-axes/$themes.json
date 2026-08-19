@@ -1,0 +1,36 @@
+[
+  {
+    "id": "brand-acme",
+    "name": "Acme",
+    "group": "Brand",
+    "selectedTokenSets": { "core": "source", "brand/acme": "enabled" }
+  },
+  {
+    "id": "brand-globex",
+    "name": "Globex",
+    "group": "Brand",
+    "selectedTokenSets": { "core": "source", "brand/globex": "enabled" }
+  },
+  {
+    "id": "density-cozy",
+    "name": "Cozy",
+    "group": "Density",
+    "selectedTokenSets": { "core": "source", "density/cozy": "enabled" }
+  },
+  {
+    "id": "density-compact",
+    "name": "Compact",
+    "group": "Density",
+    "selectedTokenSets": { "core": "source", "density/compact": "enabled" }
+  },
+  {
+    "id": "mode-light",
+    "name": "Light",
+    "selectedTokenSets": { "core": "source", "mode/light": "enabled" }
+  },
+  {
+    "id": "mode-dark",
+    "name": "Dark",
+    "selectedTokenSets": { "core": "source", "mode/dark": "enabled" }
+  }
+]

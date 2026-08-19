@@ -77,7 +77,7 @@ tokens-mcp  # launches the stdio server
 | Tool | Purpose |
 |------|---------|
 | `list_token_sets` | List all sets in order with layer + token count. Read-only overview. |
-| `list_themes` | List all themes grouped by axis (Semantic, Device, Shape, Theme, …). Discover valid values for `theme:` arguments. |
+| `list_themes` | List all themes grouped by axis, plus the default value per axis. Axis names come from the loaded `$themes.json` and differ per design system — call this to discover valid `theme:` values. |
 | `browse_tokens` | Browse tokens as a nested tree, filterable by set, path-prefix, DTCG `$type`. Configurable depth. |
 | `search_tokens` | Case-insensitive substring search across token dot-paths. Up to 100 results. |
 | `resolve_token` | Resolve a single dot-path to its computed value for a given theme, returning the full reference chain. |
@@ -88,6 +88,13 @@ tokens-mcp  # launches the stdio server
 | `check_design_rules` | Run controls/component-reference + naming + broken-reference + Light/Dark parity checks. Reports violations grouped by rule. |
 
 Every tool accepts an optional `tokens_path: string` parameter (omit for walk-up).
+
+Theme axes are read from the loaded `$themes.json` — the groups it assigns to its
+themes are the axes, the theme names are the values. `{ Semantic: "Light" }` and
+`{ Brand: "Globex", Density: "Compact" }` are equally valid; what counts is what the
+token system defines. Omitted axes fall back to their default (the first theme in the
+group), and an axis or value the system does not define is rejected with a list of the
+ones that exist. Themes with no `group` collect under the `Ungrouped` axis.
 
 ## Brand-iteration loop
 

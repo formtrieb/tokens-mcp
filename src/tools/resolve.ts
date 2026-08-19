@@ -1,41 +1,15 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { ReferenceResolver, formatColor } from "@formtrieb/tokens-core";
-import type { ThemeAxes } from "@formtrieb/tokens-core";
 
 const FORMAT_DESCRIPTION =
   "Optional colour render format for finalValue: 'rgba' (rgb()/rgba()), 'hex8' (#rrggbbaa), or 'hex' (#rrggbb). Non-colour values pass through unchanged. Omit to keep the raw resolved value (alpha modifiers stay rgba(), everything else hex).";
-import type { ThemeLoader } from "../loader/theme-loader.js";
 import { resolveAndLoad, TOKENS_PATH_DESCRIPTION } from "../token-context.js";
-
-/**
- * Zod shape for Formtrieb's user-selectable theme axes.
- * Matches the three axes with user choices in $themes.json.
- * Other axis groups (Foundation, Typography, Components-*) are resolved
- * automatically via getDefaultAxes() and should not be passed here.
- */
-const themeAxesShape = {
-  Semantic: z
-    .enum(["Light", "Dark"])
-    .optional()
-    .describe("Light/dark mode"),
-  Device: z
-    .enum(["Desktop", "Tablet", "Mobile"])
-    .optional()
-    .describe("Device breakpoint"),
-  Shape: z
-    .enum(["Round", "Sharp"])
-    .optional()
-    .describe("Corner shape style"),
-};
-
-function coerceTheme(
-  theme: Partial<ThemeAxes> | undefined,
-  themeLoader: ThemeLoader
-): ThemeAxes {
-  const defaults = themeLoader.getDefaultAxes();
-  return { ...defaults, ...theme } as ThemeAxes;
-}
+import {
+  themeAxesArg,
+  THEME_AXES_DESCRIPTION,
+  resolveAxes,
+} from "./theme-arg.js";
 
 export function registerResolveTools(server: McpServer) {
   server.registerTool(
@@ -50,12 +24,7 @@ export function registerResolveTools(server: McpServer) {
           .describe(
             "Token dot-path (e.g. 'color.controls.brand.background.enabled')"
           ),
-        theme: z
-          .object(themeAxesShape)
-          .optional()
-          .describe(
-            "Theme axes to resolve against. Any omitted axis uses its default."
-          ),
+        theme: themeAxesArg.optional().describe(THEME_AXES_DESCRIPTION),
         format: z
           .enum(["rgba", "hex8", "hex"])
           .optional()
@@ -66,7 +35,7 @@ export function registerResolveTools(server: McpServer) {
     },
     async ({ path, theme, format, tokens_path }) => {
       const { tokenTree, themeLoader } = resolveAndLoad({ tokens_path });
-      const axes = coerceTheme(theme, themeLoader);
+      const axes = resolveAxes(theme, themeLoader);
       const { enabled, source } = themeLoader.getActiveSets(axes);
       const merged = tokenTree.buildMergedTree(enabled, source);
       const resolver = new ReferenceResolver(merged);
@@ -106,10 +75,7 @@ export function registerResolveTools(server: McpServer) {
           .array(z.string().min(1))
           .min(1)
           .describe("Array of token dot-paths to resolve"),
-        theme: z
-          .object(themeAxesShape)
-          .optional()
-          .describe("Theme axes. Any omitted axis uses its default."),
+        theme: themeAxesArg.optional().describe(THEME_AXES_DESCRIPTION),
         verbose: z
           .boolean()
           .optional()
@@ -126,7 +92,7 @@ export function registerResolveTools(server: McpServer) {
     },
     async ({ paths, theme, verbose, format, tokens_path }) => {
       const { tokenTree, themeLoader } = resolveAndLoad({ tokens_path });
-      const axes = coerceTheme(theme, themeLoader);
+      const axes = resolveAxes(theme, themeLoader);
       const { enabled, source } = themeLoader.getActiveSets(axes);
       const merged = tokenTree.buildMergedTree(enabled, source);
       const resolver = new ReferenceResolver(merged);

@@ -1,0 +1,11 @@
+{
+  "tokenSetOrder": [
+    "core",
+    "brand/acme",
+    "brand/globex",
+    "density/cozy",
+    "density/compact",
+    "mode/light",
+    "mode/dark"
+  ]
+}

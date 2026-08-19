@@ -1,0 +1,3 @@
+{
+  "color": { "background": { "$value": "{color.gray.900}", "$type": "color" } }
+}
