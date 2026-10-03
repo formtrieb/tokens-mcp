@@ -1,3 +1,5 @@
+> **Archived.** Development of `@formtrieb/tokens-mcp` continues in the monorepo [formtrieb/tokens](https://github.com/formtrieb/tokens) under `packages/mcp`. The npm package name is unchanged; this repository stays as a read-only snapshot.
+
 # @formtrieb/tokens-mcp
 
 **MCP server exposing Tokens-Studio-shaped design token systems to LLM
